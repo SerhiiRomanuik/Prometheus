@@ -1,0 +1,85 @@
+version: "3.2" 
+services:
+  prometheus:
+    image: prom/prometheus:v2.15.2
+    user: root
+    ports:
+      - "9090:9090"
+    hostname: "prometheus"
+    volumes:
+      - "../services/prometheus/prometheus.yml:/prometheus.yml"
+      - "../services/prometheus/prometheus.rules.yml:/prometheus.rules.yml"
+      - "prometheus:/prometheus"
+    command:
+      - '--config.file=/prometheus.yml'
+      - '--storage.tsdb.retention.time=2d'
+      - '--web.enable-lifecycle'  ## To enable reloading from HTTP endpoint
+    depends_on:
+      - cadvisor
+    restart: always
+
+  cadvisor:
+    image: gcr.io/google_containers/cadvisor:v0.31.0
+    hostname: "cadvisor"
+    privileged: true
+    ports:
+      - "8000:8000"
+    volumes:
+      - "/var/run:/var/run:rw"
+      - "/sys:/sys:ro"
+      - "/var/lib/docker/:/var/lib/docker:ro"
+      - "/:/rootfs:ro"
+    command:
+      - "-port=8000"
+
+  grafana:
+    image: grafana/grafana:6.6.0
+    ports:
+      - "3030:3030"
+    hostname: "grafana"
+    volumes:
+      - "../services/grafana/grafana.ini:/etc/grafana/grafana.ini"
+      - "../services/grafana/provisioning/:/etc/grafana/provisioning/"
+      - "../services/grafana/dashboards/:/etc/grafana/dashboards/"
+     # - "../services/grafana/logo.svg:/usr/share/grafana/public/img/grafana_icon.svg"
+      - "grafana:/etc/grafana/"
+    restart: always
+
+  postgres-exporter:
+    image: wrouesnel/postgres_exporter:v0.8.0
+    ports:
+      - "9187:9187"
+    hostname: "postgres-exporter"
+    environment:
+      DATA_SOURCE_URI: 'postgres:5432/nucleus?sslmode=disable'
+      DATA_SOURCE_USER: 'admin'
+      DATA_SOURCE_PASS: 'admin'
+    restart: always
+
+  alertmanager:
+    image: prom/alertmanager:v0.20.0
+    hostname: alertmanager
+    ports:
+      - 9093:9093
+    command:
+      - '--config.file=/etc/alertmanager/alertmanager.yml'
+      - '--storage.path=/alertmanager'
+    depends_on:
+      - prometheus 
+    volumes:
+      - "alertmanager:/alertmanager"
+      - "../services/prometheus/alertmanager.yml:/etc/alertmanager/alertmanager.yml"
+
+  mongodb-exporter:                                                                                                                                     
+    image: eses/mongodb_exporter
+    hostname: mongodb-exporter
+    ports:
+      - "9144:9144"
+    command:
+      - '-web.listen-address=0.0.0.0:9144'
+      - '-mongodb.uri=mongodb://mongodb:27017'
+
+volumes:
+    prometheus:
+    grafana:
+    alertmanager:

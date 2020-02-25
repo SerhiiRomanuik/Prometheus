@@ -1,0 +1,40 @@
+groups: 
+- name: QA
+  rules:
+  - alert: OutOfStorageSpace
+    expr: node_filesystem_free_bytes{mountpoint="/",device="/dev/mapper/centos-root"}/ node_filesystem_size_bytes{mountpoint="/",device="/dev/mapper/centos-root"} * 100 < 20
+    for: 30s
+    labels:
+      severity: critical
+    annotations:
+      summary: "Out of memory Server"
+      description: "Node memory is filling up (< 20% left)\n  VALUE = {{ $value }}"
+
+  - alert: HighCpuLoad
+    expr: 100 - (avg by(instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+    for: 1m
+    labels:
+      severity: critical
+    annotations:
+      summary: "High CPU load Server"
+      description: "CPU load is > 80%\n  VALUE = {{ $value }}"
+
+  - alert: ContainerKilled
+    expr: sum(rate(container_last_seen{name=~".+"}[1m])) by (container_label_com_docker_compose_service) < 0.8
+    # expr: sum(container_memory_rss{name=~".+"}) by (container_label_com_docker_compose_service) / 1024^2 < 0.01
+    # expr: sum(time() - container_last_seen{container_label_com_docker_compose_service!=""}) by (name) 
+    for: 1m
+    labels:
+      severity: critical
+    annotations:
+      summary: "Container killed on Server"
+      description: "A container has disappeared\n  VALUE = {{ $value }}\n  LABELS: {{ $labels.container_label_com_docker_compose_service }}"
+    
+  - alert: TargetMetrics
+    expr: avg_over_time(up[2m]) < 0.75
+    for: 1m
+    labels:
+      severity: info
+    annotations:
+      summary: "Exporter does not return any metrics Server"
+      description: "Target: {{ $labels.job }}\n VALUE = {{ $value }}"

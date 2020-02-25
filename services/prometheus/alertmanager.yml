@@ -1,0 +1,10 @@
+route: 
+    repeat_interval: 5m
+    group_interval: 30s
+    receiver: 'rocketchat'
+
+receivers:
+    - name: 'rocketchat'
+      webhook_configs:
+          - send_resolved: false
+            url: ''
