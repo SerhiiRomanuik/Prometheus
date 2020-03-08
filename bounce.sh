@@ -2,5 +2,6 @@
 
 cd /opt/medied/deploy
 
-docker-compose rm -v -s -f \
+docker-compose pull \
+&& docker-compose down -v \
 && docker-compose up -d --remove-orphans
