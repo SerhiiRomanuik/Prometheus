@@ -10,4 +10,4 @@ Simple monitoring environment for Docker eco-system.
 * [PostgreSQL-Exporter](https://github.com/wrouesnel/postgres_exporter) - scraping metrics/stats from PostgreSQL (using **v0.8.0**)
 * [MongoDB-Exporter](https://hub.docker.com/r/eses/mongodb_exporter) - scraping metrics/stats from MongoDB (using **latest**)
 * [Grafana](https://github.com/grafana/grafana) - main visualizator for Prometheus (using **6.6.0**)
-* [Alertmanager](https://github.com/prometheus/alertmanager) - routing alerts from prometheus to receiver (**Rocket.Chat** with webhook)
+* [Alertmanager](https://github.com/prometheus/alertmanager) - routing alerts from Prometheus to receiver (**Rocket.Chat** with webhook)
